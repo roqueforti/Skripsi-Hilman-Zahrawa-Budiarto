@@ -9,7 +9,6 @@ interface FileData {
   name: string;
   size: string;
   uploadDate: string;
-  path: string;
 }
 
 export function AdminPage() {
@@ -20,7 +19,7 @@ export function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Auth guard
   useEffect(() => {
@@ -80,41 +79,41 @@ export function AdminPage() {
   };
 
   const handleBulkDelete = async () => {
-    if (selectedFiles.length === 0) return;
+    if (selectedIds.length === 0) return;
     
-    if (!confirm(`Yakin ingin menghapus ${selectedFiles.length} file yang dipilih?`)) return;
+    if (!confirm(`Yakin ingin menghapus ${selectedIds.length} sertifikasi yang dipilih?`)) return;
 
     try {
       const res = await fetch('/api/certifications', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filenames: selectedFiles }),
+        body: JSON.stringify({ ids: selectedIds }),
       });
 
       if (res.ok) {
-        setFiles(files.filter(f => !selectedFiles.includes(f.name)));
-        setSelectedFiles([]);
+        setFiles(files.filter(f => !selectedIds.includes(f.id)));
+        setSelectedIds([]);
       } else {
-        alert('Gagal menghapus beberapa file');
+        alert('Gagal menghapus beberapa data');
       }
     } catch (error) {
       console.error('Error deleting:', error);
     }
   };
 
-  const toggleSelect = (filename: string) => {
-    if (selectedFiles.includes(filename)) {
-      setSelectedFiles(selectedFiles.filter(item => item !== filename));
+  const toggleSelect = (id: string) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(item => item !== id));
     } else {
-      setSelectedFiles([...selectedFiles, filename]);
+      setSelectedIds([...selectedIds, id]);
     }
   };
 
   const toggleSelectAll = () => {
-    if (selectedFiles.length === filteredFiles.length) {
-      setSelectedFiles([]);
+    if (selectedIds.length === filteredFiles.length) {
+      setSelectedIds([]);
     } else {
-      setSelectedFiles(filteredFiles.map(f => f.name));
+      setSelectedIds(filteredFiles.map(f => f.id));
     }
   };
 
@@ -158,18 +157,18 @@ export function AdminPage() {
         {/* Page Header */}
         <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h2 className="text-[32px] font-bold text-[#101828] mb-1">Manajemen Database PDF</h2>
-            <p className="text-[15px] text-[#64748b]">Kelola file sertifikasi (PDF) yang akan digunakan oleh model algoritma pencocokan teks.</p>
+            <h2 className="text-[32px] font-bold text-[#101828] mb-1">Manajemen Database Sertifikasi</h2>
+            <p className="text-[15px] text-[#64748b]">Kelola data sertifikasi yang akan digunakan oleh model algoritma pencocokan teks.</p>
           </div>
 
           <div className="flex items-center gap-3">
-            {selectedFiles.length > 0 && (
+            {selectedIds.length > 0 && (
               <button
                 onClick={handleBulkDelete}
                 className="flex items-center gap-2 px-5 py-3 bg-red-50 text-red-600 text-[15px] rounded-[14px] hover:bg-red-100 transition-all font-bold border border-red-200 animate-in fade-in slide-in-from-right-4"
               >
                 <Trash2 size={18} />
-                Hapus Terpilih ({selectedFiles.length})
+                Hapus Terpilih ({selectedIds.length})
               </button>
             )}
 
@@ -200,7 +199,7 @@ export function AdminPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari file sertifikasi..."
+              placeholder="Cari sertifikasi..."
               className="flex-1 py-3 text-[15px] focus:outline-none placeholder:text-[#94a3b8]"
             />
           </div>
@@ -210,7 +209,7 @@ export function AdminPage() {
               <HardDrive size={24} className="text-[#0084A1]" />
             </div>
             <div>
-              <p className="text-[12px] font-bold text-[#64748b] uppercase tracking-wider">Total Files</p>
+              <p className="text-[12px] font-bold text-[#64748b] uppercase tracking-wider">Total Sertifikasi</p>
               <p className="text-[24px] font-bold text-[#101828]">{files.length}</p>
             </div>
           </div>
@@ -227,7 +226,7 @@ export function AdminPage() {
                       onClick={toggleSelectAll}
                       className="inline-flex items-center justify-center p-1 rounded-md text-[#0084A1] hover:bg-[#0084A1]/10 transition-colors"
                     >
-                      {selectedFiles.length === filteredFiles.length && filteredFiles.length > 0 ? (
+                      {selectedIds.length === filteredFiles.length && filteredFiles.length > 0 ? (
                         <CheckSquare size={20} />
                       ) : (
                         <Square size={20} />
@@ -235,8 +234,8 @@ export function AdminPage() {
                     </button>
                   </th>
                   <th className="text-left py-5 text-[13px] font-bold text-[#64748b] uppercase tracking-wider w-[60px]">No</th>
-                  <th className="text-left px-8 py-5 text-[13px] font-bold text-[#64748b] uppercase tracking-wider">Nama File</th>
-                  <th className="text-left px-8 py-5 text-[13px] font-bold text-[#64748b] uppercase tracking-wider">Ukuran</th>
+                  <th className="text-left px-8 py-5 text-[13px] font-bold text-[#64748b] uppercase tracking-wider">Nama Sertifikasi</th>
+                  <th className="text-left px-8 py-5 text-[13px] font-bold text-[#64748b] uppercase tracking-wider">Ukuran Teks</th>
                   <th className="text-left px-8 py-5 text-[13px] font-bold text-[#64748b] uppercase tracking-wider">Tanggal Upload</th>
                 </tr>
               </thead>
@@ -245,26 +244,26 @@ export function AdminPage() {
                   <tr>
                     <td colSpan={5} className="py-20 text-center">
                       <Loader2 size={32} className="animate-spin mx-auto text-[#0084A1] mb-2" />
-                      <p className="text-[15px] text-[#64748b] font-medium">Memuat data file...</p>
+                      <p className="text-[15px] text-[#64748b] font-medium">Memuat data...</p>
                     </td>
                   </tr>
                 ) : filteredFiles.length > 0 ? (
                   filteredFiles.map((file, index) => (
                     <tr 
                       key={file.id} 
-                      className={`transition-colors group ${selectedFiles.includes(file.name) ? 'bg-[#0084A1]/5' : 'hover:bg-[#f8fafc]'}`}
+                      className={`transition-colors group ${selectedIds.includes(file.id) ? 'bg-[#0084A1]/5' : 'hover:bg-[#f8fafc]'}`}
                     >
                       <td className="px-6 py-5 text-center">
                         <button 
-                          onClick={() => toggleSelect(file.name)}
-                          className={`inline-flex items-center justify-center p-1 rounded-md transition-colors ${selectedFiles.includes(file.name) ? 'text-[#0084A1]' : 'text-[#e2e8f0] group-hover:text-[#cbd5e1]'}`}
+                          onClick={() => toggleSelect(file.id)}
+                          className={`inline-flex items-center justify-center p-1 rounded-md transition-colors ${selectedIds.includes(file.id) ? 'text-[#0084A1]' : 'text-[#e2e8f0] group-hover:text-[#cbd5e1]'}`}
                         >
-                          {selectedFiles.includes(file.name) ? (
+                          {selectedIds.includes(file.id) ? (
                             <CheckCircle2 size={22} fill="currentColor" className="text-white" />
                           ) : (
                             <Square size={20} />
                           )}
-                          {selectedFiles.includes(file.name) && <CheckCircle2 size={22} className="absolute text-[#0084A1]" />}
+                          {selectedIds.includes(file.id) && <CheckCircle2 size={22} className="absolute text-[#0084A1]" />}
                         </button>
                       </td>
                       <td className="py-5 text-[14px] text-[#64748b] font-bold">
@@ -272,10 +271,10 @@ export function AdminPage() {
                       </td>
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg transition-colors ${selectedFiles.includes(file.name) ? 'bg-[#0084A1]/20 text-[#0084A1]' : 'bg-red-50 text-red-500'}`}>
+                          <div className={`p-2 rounded-lg transition-colors ${selectedIds.includes(file.id) ? 'bg-[#0084A1]/20 text-[#0084A1]' : 'bg-[#0084A1]/10 text-[#0084A1]'}`}>
                             <FileText size={20} />
                           </div>
-                          <span className={`text-[15px] font-semibold transition-colors ${selectedFiles.includes(file.name) ? 'text-[#0084A1]' : 'text-[#1e293b] group-hover:text-[#0084A1]'}`}>{file.name}</span>
+                          <span className={`text-[15px] font-semibold transition-colors ${selectedIds.includes(file.id) ? 'text-[#0084A1]' : 'text-[#1e293b] group-hover:text-[#0084A1]'}`}>{file.name}</span>
                         </div>
                       </td>
                       <td className="px-8 py-5 text-[14px] text-[#64748b] font-medium">{file.size}</td>
@@ -288,7 +287,7 @@ export function AdminPage() {
                       <div className="bg-[#f8fafc] size-16 rounded-full flex items-center justify-center mx-auto mb-4">
                         <FileText size={32} className="text-[#94a3b8]" />
                       </div>
-                      <p className="text-[16px] text-[#1e293b] font-bold mb-1">Belum ada file</p>
+                      <p className="text-[16px] text-[#1e293b] font-bold mb-1">Belum ada data</p>
                       <p className="text-[14px] text-[#64748b]">Silakan upload file sertifikat dalam format PDF.</p>
                     </td>
                   </tr>
