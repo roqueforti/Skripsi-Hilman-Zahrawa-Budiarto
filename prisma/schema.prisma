@@ -8,15 +8,17 @@ datasource db {
 }
 
 model Certification {
-  id          String   @id @default(cuid())
-  name        String
-  institution String
-  category    String
-  description String?
-  matchCriteria String? // Keyword atau deskripsi untuk matching
-  pdfPath     String?  // Nama file PDF di folder public
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  institution   String
+  category      String
+  description   String?
+  matchCriteria String? 
+  pdfPath       String?  
+  rawText       String?  @db.Text
+  translatedText String? @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Admin {

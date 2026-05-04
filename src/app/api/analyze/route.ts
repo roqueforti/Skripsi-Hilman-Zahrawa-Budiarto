@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { prisma } from '@/lib/db';
 
 export async function POST(request: Request) {
   try {
@@ -12,28 +11,29 @@ export async function POST(request: Request) {
 
     const PYTHON_API_URL = process.env.PYTHON_API_URL;
 
-    // Load domain data from local cache (JSON)
-    const projectRoot = process.cwd();
-    const cachePath = path.join(projectRoot, 'public', 'uploads', 'certifications', 'domain_cache.json');
-    
-    if (!fs.existsSync(cachePath)) {
-      return NextResponse.json({ error: 'Data sertifikasi belum tersedia. Silakan unggah file melalui Admin.' }, { status: 400 });
-    }
-
-    const domainCache = JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
-    
-    // Prepare domains object for Python API
-    const domains: Record<string, string> = {};
-    for (const [filename, data] of Object.entries(domainCache)) {
-      if (typeof data === 'string') {
-        domains[filename] = data;
-      } else if (typeof data === 'object' && data !== null) {
-        // @ts-ignore
-        domains[filename] = data.translated || data.raw || "";
+    // 1. Fetch certifications from Database
+    const certifications = await prisma.certification.findMany({
+      select: {
+        name: true,
+        rawText: true,
+        translatedText: true,
+        institution: true,
+        category: true,
       }
+    });
+    
+    if (certifications.length === 0) {
+      return NextResponse.json({ error: 'Data sertifikasi belum tersedia di database.' }, { status: 400 });
     }
 
-    // IF PYTHON_API_URL is set, use the external API (Hybrid Mode)
+    // 2. Prepare domains object for Python API
+    const domains: Record<string, string> = {};
+    certifications.forEach(cert => {
+      // Use translated text if available, otherwise raw text
+      domains[cert.name] = cert.translatedText || cert.rawText || "";
+    });
+
+    // 3. Call External Python NLP API (Hybrid Mode)
     if (PYTHON_API_URL) {
       console.log(`Using Hybrid NLP API at: ${PYTHON_API_URL}`);
       try {
@@ -49,67 +49,30 @@ export async function POST(request: Request) {
         }
 
         const result = await response.json();
-        return NextResponse.json(result);
+        
+        // Enrich results with DB data (institution/category) if needed
+        const enrichedResults = result.results.map((r: any) => {
+          const original = certifications.find(c => c.name === r.name);
+          return {
+            ...r,
+            institution: original?.institution || r.institution,
+            category: original?.category || r.category,
+          };
+        });
+
+        return NextResponse.json({ results: enrichedResults });
       } catch (apiError) {
         console.error('Failed to call external NLP API:', apiError);
         return NextResponse.json({ error: 'Gagal menghubungi NLP Backend' }, { status: 502 });
       }
     }
 
-    // FALLBACK: Use local Python spawn (for local development ONLY)
-    // Note: This will not work on Vercel
-    const { spawn } = require('child_process');
-    const venvPaths = [
-      path.join(projectRoot, 'venv', 'Scripts', 'python.exe'),
-      path.join(projectRoot, '.venv', 'Scripts', 'python.exe'),
-      path.join(projectRoot, 'venv', 'bin', 'python'),
-      path.join(projectRoot, '.venv', 'bin', 'python'),
-    ];
-
-    let pythonPath = 'python';
-    for (const p of venvPaths) {
-      if (fs.existsSync(p)) {
-        pythonPath = p;
-        break;
-      }
-    }
-
-    const scriptPath = path.join(projectRoot, 'scripts', 'analyzer.py');
-
-    return new Promise((resolve) => {
-      const pythonProcess = spawn(pythonPath, [scriptPath]);
-      let resultData = '';
-      let errorData = '';
-
-      pythonProcess.stdin.write(profileText);
-      pythonProcess.stdin.end();
-
-      pythonProcess.stdout.on('data', (data: any) => {
-        const output = data.toString();
-        // Check if it's the final result (contains "results")
-        if (output.includes('"results":')) {
-          resultData = output;
-        }
-      });
-
-      pythonProcess.stderr.on('data', (data: any) => {
-        errorData += data.toString();
-      });
-
-      pythonProcess.on('close', (code: number) => {
-        if (code !== 0) {
-          console.error(`Local Python Error: ${errorData}`);
-          resolve(NextResponse.json({ error: 'Gagal menjalankan analisis lokal' }, { status: 500 }));
-        } else {
-          try {
-            const finalJson = JSON.parse(resultData);
-            resolve(NextResponse.json(finalJson));
-          } catch (e) {
-            resolve(NextResponse.json({ error: 'Format hasil analisis tidak valid' }, { status: 500 }));
-          }
-        }
-      });
-    });
+    // 4. FALLBACK: Local analysis if no external API (for local dev)
+    // Note: This part is for local development with scripts/analyzer.py
+    // We create a temporary cache object for the script
+    return NextResponse.json({ 
+      error: 'PYTHON_API_URL belum dikonfigurasi. Mode lokal tidak didukung di Vercel.' 
+    }, { status: 501 });
 
   } catch (error) {
     console.error('Internal API Error:', error);

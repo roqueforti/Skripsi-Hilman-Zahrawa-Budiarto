@@ -1,38 +1,6 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { spawn } from 'child_process';
-
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads', 'certifications');
-
-function getPythonPath(): string {
-  const projectRoot = process.cwd();
-  const envPythonPath = process.env.PYTHON_PATH;
-  const venvPaths = [
-    path.join(projectRoot, 'venv', 'Scripts', 'python.exe'),
-    path.join(projectRoot, '.venv', 'Scripts', 'python.exe'),
-    path.join(projectRoot, 'venv', 'bin', 'python'),
-    path.join(projectRoot, '.venv', 'bin', 'python'),
-  ];
-
-  if (envPythonPath && envPythonPath !== 'python' && fs.existsSync(envPythonPath)) {
-    return envPythonPath;
-  }
-  for (const p of venvPaths) {
-    if (fs.existsSync(p)) return p;
-  }
-  return envPythonPath || 'python';
-}
-
-function runPreprocessing(): void {
-  const scriptPath = path.join(process.cwd(), 'scripts', 'preprocess.py');
-  const pythonPath = getPythonPath();
-  
-  // Fire and forget - runs in background
-  const proc = spawn(pythonPath, [scriptPath], { stdio: 'ignore', detached: true });
-  proc.unref();
-  console.log('Pre-extraction triggered in background');
-}
+import { extractTextFromPdf } from '@/lib/pdf';
+import { prisma } from '@/lib/db';
 
 export async function POST(request: Request) {
   try {
@@ -43,28 +11,63 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Tidak ada file yang diunggah' }, { status: 400 });
     }
 
-    if (!fs.existsSync(UPLOAD_DIR)) {
-      fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-    }
-
-    const savedFiles = [];
+    const PYTHON_API_URL = process.env.PYTHON_API_URL;
+    const savedRecords = [];
 
     for (const file of files) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const filename = file.name.replace(/\s+/g, '_'); // Replace spaces with underscores
-      const filePath = path.join(UPLOAD_DIR, filename);
+      try {
+        // 1. Extract text directly from PDF
+        const rawText = await extractTextFromPdf(file);
+        
+        let translatedText = null;
 
-      fs.writeFileSync(filePath, buffer);
-      savedFiles.push(filename);
+        // 2. Translate if Python API is available
+        if (PYTHON_API_URL && rawText.trim()) {
+          try {
+            const translateRes = await fetch(`${PYTHON_API_URL}/translate`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: rawText.substring(0, 10000) }), // Limit to 10k chars for safety
+            });
+            if (translateRes.ok) {
+              const data = await translateRes.json();
+              translatedText = data.translated;
+            }
+          } catch (err) {
+            console.error('Translation failed during upload:', err);
+          }
+        }
+
+        const displayName = file.name
+          .replace('.pdf', '')
+          .replace(/[_-]/g, ' ')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+
+        // 3. Save to Database
+        const certification = await prisma.certification.create({
+          data: {
+            name: displayName,
+            institution: 'Certiport',
+            category: 'Certification',
+            rawText: rawText,
+            translatedText: translatedText,
+            pdfPath: file.name,
+          },
+        });
+
+        savedRecords.push(certification.name);
+      } catch (fileError) {
+        console.error(`Error processing file ${file.name}:`, fileError);
+      }
     }
 
-    // Trigger pre-extraction in background after upload
-    runPreprocessing();
-
     return NextResponse.json({ 
-      message: `${savedFiles.length} file berhasil diunggah`,
-      files: savedFiles 
+      message: `${savedRecords.length} sertifikasi berhasil disimpan ke database`,
+      data: savedRecords 
     });
+
   } catch (error) {
     console.error('Error uploading files:', error);
     return NextResponse.json({ error: 'Gagal mengunggah file' }, { status: 500 });
