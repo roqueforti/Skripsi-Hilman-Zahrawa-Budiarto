@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+export async function GET() {
+  return NextResponse.json({ 
+    status: "API Is Ready",
+    timestamp: new Date().toISOString(),
+    mode: process.env.PYTHON_API_URL ? "Hybrid (Hugging Face)" : "Local (Script)"
+  });
+}
+
 export async function POST(request: Request) {
   try {
     const { profileText } = await request.json();
@@ -23,7 +31,9 @@ export async function POST(request: Request) {
     });
     
     if (certifications.length === 0) {
-      return NextResponse.json({ error: 'Data sertifikasi belum tersedia di database.' }, { status: 400 });
+      return NextResponse.json({ 
+        error: 'Data sertifikasi belum tersedia di database. Silakan upload melalui halaman Admin terlebih dahulu.' 
+      }, { status: 400 });
     }
 
     // 2. Prepare domains object for Python API
@@ -50,7 +60,7 @@ export async function POST(request: Request) {
 
         const result = await response.json();
         
-        // Enrich results with DB data (institution/category) if needed
+        // Enrich results with DB data
         const enrichedResults = result.results.map((r: any) => {
           const original = certifications.find(c => c.name === r.name);
           return {
@@ -63,19 +73,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ results: enrichedResults });
       } catch (apiError) {
         console.error('Failed to call external NLP API:', apiError);
-        return NextResponse.json({ error: 'Gagal menghubungi NLP Backend' }, { status: 502 });
+        return NextResponse.json({ 
+          error: 'Gagal menghubungi NLP Backend di Hugging Face. Pastikan URL benar dan Space sedang "Running".' 
+        }, { status: 502 });
       }
     }
 
-    // 4. FALLBACK: Local analysis if no external API (for local dev)
-    // Note: This part is for local development with scripts/analyzer.py
-    // We create a temporary cache object for the script
     return NextResponse.json({ 
-      error: 'PYTHON_API_URL belum dikonfigurasi. Mode lokal tidak didukung di Vercel.' 
+      error: 'PYTHON_API_URL belum dikonfigurasi di Vercel.' 
     }, { status: 501 });
 
   } catch (error) {
     console.error('Internal API Error:', error);
-    return NextResponse.json({ error: 'Terjadi kesalahan internal' }, { status: 500 });
+    return NextResponse.json({ error: 'Terjadi kesalahan internal pada server' }, { status: 500 });
   }
 }

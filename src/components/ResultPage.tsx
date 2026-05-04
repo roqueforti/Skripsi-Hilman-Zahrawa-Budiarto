@@ -77,7 +77,7 @@ export function ResultPage({ onBack, profileText, fileName }: ResultPageProps) {
       };
 
       // Start actual API call in background
-      const apiPromise = fetch('/api/analyze', {
+      const apiPromise = fetch('/api/analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ profileText }),
@@ -215,7 +215,6 @@ export function ResultPage({ onBack, profileText, fileName }: ResultPageProps) {
   if (loading) {
     return (
       <div className="fixed inset-0 z-[100] flex flex-col bg-[#030213] overflow-hidden font-sans">
-        {/* Background Animation and Gradients remain same... */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-[#030213]"></div>
           <div className="absolute top-[20%] left-[10%] w-[300px] h-[300px] bg-[#0084A1]/10 rounded-full blur-[120px] animate-pulse"></div>
@@ -334,6 +333,12 @@ export function ResultPage({ onBack, profileText, fileName }: ResultPageProps) {
 
   const topFive = recommendations.slice(0, 5);
   const otherProducts = recommendations.slice(5);
+
+  const getScoreBg = (score: number) => {
+    if (score >= 80) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (score >= 60) return 'bg-[#0084A1]/10 text-[#0084A1] border-[#0084A1]/20';
+    return 'bg-gray-50 text-gray-700 border-gray-200';
+  };
 
   return (
     <div className="h-screen flex flex-col bg-white overflow-hidden font-sans">
