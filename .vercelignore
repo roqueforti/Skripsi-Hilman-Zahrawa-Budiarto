@@ -1,0 +1,9 @@
+api/
+nltk_data/
+nltk_data_api/
+scripts/
+.venv/
+venv/
+*.py
+*.pyc
+__pycache__/
