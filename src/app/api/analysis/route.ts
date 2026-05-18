@@ -11,7 +11,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { profileText } = await request.json();
+    const { profileText, clientName = "Manual Input" } = await request.json();
 
     if (!profileText) {
       return NextResponse.json({ error: 'Teks profil tidak ditemukan' }, { status: 400 });
@@ -70,11 +70,29 @@ export async function POST(request: Request) {
           };
         });
 
+        // Save to History
+        if (enrichedResults.length > 0) {
+          try {
+            await prisma.analysisHistory.create({
+              data: {
+                clientName,
+                profileText,
+                topResult: enrichedResults[0].name,
+                matchScore: enrichedResults[0].matchScore,
+                detailedResults: JSON.stringify(enrichedResults),
+              }
+            });
+          } catch (historyErr) {
+            console.error('Failed to save analysis history:', historyErr);
+            // Don't fail the request if history saving fails
+          }
+        }
+
         return NextResponse.json({ results: enrichedResults });
       } catch (apiError) {
         console.error('Failed to call external NLP API:', apiError);
         return NextResponse.json({ 
-          error: 'Gagal menghubungi NLP Backend di Hugging Face. Pastikan URL benar dan Space sedang "Running".' 
+          error: 'Gagal menghubungi NLP Backend (Python). Pastikan proses backend sudah selesai loading (Uvicorn running on port 8000).' 
         }, { status: 502 });
       }
     }
@@ -83,8 +101,11 @@ export async function POST(request: Request) {
       error: 'PYTHON_API_URL belum dikonfigurasi di Vercel.' 
     }, { status: 501 });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Internal API Error:', error);
-    return NextResponse.json({ error: 'Terjadi kesalahan internal pada server' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Terjadi kesalahan internal pada server',
+      details: error.message || String(error)
+    }, { status: 500 });
   }
 }

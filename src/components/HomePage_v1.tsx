@@ -69,7 +69,7 @@ export function HomePage({ onAnalyze }: HomePageProps) {
             </h2>
             
             <p className="text-lg text-gray-700 mb-12 leading-relaxed">
-              Sistem rekomendasi sertifikasi Certiport berbasis AI untuk <span className="text-[#007fa3] font-medium">CACT JTI Polinema</span>. Upload profil klien dan dapatkan rekomendasi yang akurat menggunakan text similarity analysis.
+              Sistem rekomendasi sertifikasi Certiport berbasis AI untuk <span className="text-[#007fa3] font-medium">CATC JTI Polinema</span>. Upload profil klien dan dapatkan rekomendasi yang akurat menggunakan text similarity analysis.
             </p>
             
             {/* Features */}
@@ -100,7 +100,7 @@ export function HomePage({ onAnalyze }: HomePageProps) {
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900 text-sm mb-1">Internal Use</h3>
-                  <p className="text-xs text-gray-600">Khusus tim CACT</p>
+                  <p className="text-xs text-gray-600">Khusus tim CATC</p>
                 </div>
               </div>
               
@@ -119,7 +119,7 @@ export function HomePage({ onAnalyze }: HomePageProps) {
           {/* Footer Info */}
           <div className="pt-8 border-t border-gray-300/50">
             <p className="text-xs text-gray-700">
-              Dikembangkan oleh <span className="text-[#007fa3] font-medium">CACT</span> · Jurusan Teknologi Informasi · Politeknik Negeri Malang
+              Dikembangkan oleh <span className="text-[#007fa3] font-medium">CATC</span> · Jurusan Teknologi Informasi · Politeknik Negeri Malang
             </p>
           </div>
         </div>

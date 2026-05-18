@@ -1,22 +1,48 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Upload, ArrowRight, Sparkles, Zap, Target, Shield, Loader2, FileText } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { extractTextFromPdf } from '@/lib/pdf';
+import { AnalysisLoadingModal } from './AnalysisLoadingModal';
 
 interface HomePageProps {
-  onAnalyze: (text: string, fileName?: string) => void;
+  onAnalyze: (text: string, fileName?: string, results?: any[]) => void;
 }
 
 export function HomePage({ onAnalyze }: HomePageProps) {
   const [profileText, setProfileText] = useState('');
   const [uploadedFileName, setUploadedFileName] = useState('');
   const [isExtracting, setIsExtracting] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [backendStatus, setBackendStatus] = useState<'checking' | 'ready' | 'loading'>('checking');
+  
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    const checkStatus = async () => {
+      try {
+        const res = await fetch('/api/backend-status');
+        if (res.ok) {
+          setBackendStatus('ready');
+          clearInterval(interval);
+        } else {
+          setBackendStatus('loading');
+        }
+      } catch (error) {
+        setBackendStatus('loading');
+      }
+    };
+
+    checkStatus();
+    interval = setInterval(checkStatus, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (profileText.trim()) {
-      onAnalyze(profileText, uploadedFileName);
+      setIsModalOpen(true);
     }
   };
   
@@ -88,7 +114,7 @@ export function HomePage({ onAnalyze }: HomePageProps) {
             </h2>
             
             <p className="text-lg text-gray-700 mb-12 leading-relaxed">
-              Sistem rekomendasi sertifikasi Certiport berbasis AI untuk <span className="text-[#007fa3] font-medium">CACT JTI Polinema</span>. Upload profil klien dan dapatkan rekomendasi yang akurat menggunakan text similarity analysis.
+              Sistem rekomendasi sertifikasi Certiport berbasis AI untuk <span className="text-[#007fa3] font-medium">CATC JTI Polinema</span>. Upload profil klien dan dapatkan rekomendasi yang akurat menggunakan text similarity analysis.
             </p>
             
             {/* Features */}
@@ -119,7 +145,7 @@ export function HomePage({ onAnalyze }: HomePageProps) {
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900 text-sm mb-1">Internal Use</h3>
-                  <p className="text-xs text-gray-600">Khusus tim CACT</p>
+                  <p className="text-xs text-gray-600">Khusus tim CATC</p>
                 </div>
               </div>
               
@@ -137,9 +163,27 @@ export function HomePage({ onAnalyze }: HomePageProps) {
           
           {/* Footer Info */}
           <div className="pt-8 border-t border-gray-300/50 flex justify-between items-center">
-            <p className="text-xs text-gray-700">
-              Dikembangkan oleh <span className="text-[#007fa3] font-medium">CACT</span> · Jurusan Teknologi Informasi · Politeknik Negeri Malang
-            </p>
+            <div className="flex items-center gap-4">
+              <p className="text-xs text-gray-700">
+                Dikembangkan oleh <span className="text-[#007fa3] font-medium">CATC</span> · Jurusan Teknologi Informasi · Politeknik Negeri Malang
+              </p>
+              
+              {/* Backend Status Badge */}
+              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold transition-all ${
+                backendStatus === 'ready' 
+                  ? 'bg-emerald-50 text-emerald-600 border-emerald-200' 
+                  : 'bg-amber-50 text-amber-600 border-amber-200'
+              }`}>
+                {backendStatus !== 'ready' ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                )}
+                <span>
+                  {backendStatus === 'ready' ? 'NLP Backend Ready' : 'Menyiapkan AI Model...'}
+                </span>
+              </div>
+            </div>
             <a 
               href="/login" 
               className="text-[10px] text-gray-400 hover:text-[#007fa3] transition-colors"
@@ -252,16 +296,36 @@ Kami ingin meningkatkan kemampuan tim dalam cloud computing (Azure & AWS), cyber
               
               <button
                 type="submit"
-                disabled={!profileText.trim() || isExtracting}
-                className="group w-full h-[54px] bg-[#007fa3] text-white text-[16px] rounded-xl hover:bg-[#006a8a] transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-bold shadow-lg shadow-[#007fa3]/20 hover:shadow-xl hover:shadow-[#007fa3]/30 active:scale-[0.98]"
+                disabled={!profileText.trim() || isExtracting || backendStatus !== 'ready'}
+                className="group w-full h-[54px] bg-[#007fa3] text-white text-[16px] rounded-xl hover:bg-[#006a8a] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-bold shadow-lg shadow-[#007fa3]/20 hover:shadow-xl hover:shadow-[#007fa3]/30 active:scale-[0.98]"
               >
-                Analisis Profil Klien
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
+                {backendStatus !== 'ready' ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Menyiapkan NLP Model...
+                  </>
+                ) : (
+                  <>
+                    Analisis Profil Klien
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
+                  </>
+                )}
               </button>
             </div>
           </form>
         </div>
       </div>
+
+      <AnalysisLoadingModal 
+        isOpen={isModalOpen}
+        profileText={profileText}
+        fileName={uploadedFileName}
+        onComplete={(results) => {
+          setIsModalOpen(false);
+          onAnalyze(profileText, uploadedFileName, results);
+        }}
+        onCancel={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }

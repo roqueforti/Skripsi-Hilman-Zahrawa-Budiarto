@@ -26,3 +26,13 @@ model Admin {
   username String @unique
   password String
 }
+
+model AnalysisHistory {
+  id              String   @id @default(cuid())
+  clientName      String
+  profileText     String   @db.Text
+  topResult       String
+  matchScore      Float
+  detailedResults String?  @db.Text
+  createdAt       DateTime @default(now())
+}
