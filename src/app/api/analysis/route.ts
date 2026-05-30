@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
-export async function GET() {
+export async function GET(request: Request) {
   return NextResponse.json({ 
     status: "API Is Ready",
     timestamp: new Date().toISOString(),

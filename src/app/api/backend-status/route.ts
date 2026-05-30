@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: Request) {
   const PYTHON_API_URL = process.env.PYTHON_API_URL || 'http://localhost:8000';
   
   try {

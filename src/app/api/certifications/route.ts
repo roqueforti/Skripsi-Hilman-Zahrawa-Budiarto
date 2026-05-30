@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
 // GET all certifications from Database
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const certifications = await prisma.certification.findMany({
       orderBy: {
