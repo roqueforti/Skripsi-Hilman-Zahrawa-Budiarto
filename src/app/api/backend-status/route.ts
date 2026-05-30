@@ -17,8 +17,8 @@ export async function GET(request: Request) {
     if (response.ok) {
       return NextResponse.json({ status: 'ready' });
     }
-    return NextResponse.json({ status: 'loading' }, { status: 503 });
-  } catch (error) {
-    return NextResponse.json({ status: 'loading' }, { status: 503 });
+    return NextResponse.json({ status: 'loading', error: 'Response not ok' }, { status: 503 });
+  } catch (error: any) {
+    return NextResponse.json({ status: 'loading', error: error.message || 'Unknown error', url: PYTHON_API_URL }, { status: 503 });
   }
 }
