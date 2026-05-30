@@ -5,15 +5,19 @@ export async function extractTextFromPdf(file: File): Promise<string> {
   // Dynamic import of pdfjs-dist
   const pdfjs = await import('pdfjs-dist');
   
-  // Configure worker
-  // @ts-ignore
-  pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+  // Configure worker only on client-side
+  if (typeof window !== 'undefined') {
+    // @ts-ignore
+    pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+  }
 
   const arrayBuffer = await file.arrayBuffer();
   const loadingTask = pdfjs.getDocument({ 
     data: arrayBuffer,
-    useWorkerFetch: true,
-    isEvalSupported: false 
+    useWorkerFetch: false,
+    useSystemFonts: true,
+    isEvalSupported: false,
+    standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`
   });
   
   const pdf = await loadingTask.promise;
