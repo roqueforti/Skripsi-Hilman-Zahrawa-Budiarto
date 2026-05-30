@@ -11,7 +11,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Tidak ada file yang diunggah' }, { status: 400 });
     }
 
-    const PYTHON_API_URL = process.env.PYTHON_API_URL;
+    const rawUrl = process.env.PYTHON_API_URL || 'http://localhost:8000';
+    const PYTHON_API_URL = rawUrl.endsWith('/') ? rawUrl.slice(0, -1) : rawUrl;
     const savedRecords = [];
 
     for (const file of files) {

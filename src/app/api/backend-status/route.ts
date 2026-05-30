@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  const PYTHON_API_URL = process.env.PYTHON_API_URL || 'http://localhost:8000';
+  const rawUrl = process.env.PYTHON_API_URL || 'http://localhost:8000';
+  const PYTHON_API_URL = rawUrl.endsWith('/') ? rawUrl.slice(0, -1) : rawUrl;
   
   try {
     const controller = new AbortController();
