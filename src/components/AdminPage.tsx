@@ -52,29 +52,37 @@ export function AdminPage() {
     if (!selectedFilesInput || selectedFilesInput.length === 0) return;
 
     setUploading(true);
-    const formData = new FormData();
+    let successCount = 0;
+    let failCount = 0;
+
     for (let i = 0; i < selectedFilesInput.length; i++) {
+      const formData = new FormData();
       formData.append('files', selectedFilesInput[i]);
+
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (res.ok) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      } catch (error) {
+        console.error('Error uploading file:', selectedFilesInput[i].name, error);
+        failCount++;
+      }
     }
 
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (res.ok) {
-        await fetchFiles(); // Refresh list
-      } else {
-        const error = await res.json();
-        alert(error.error || 'Gagal mengunggah file');
-      }
-    } catch (error) {
-      console.error('Error uploading:', error);
-      alert('Terjadi kesalahan saat mengunggah');
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+    await fetchFiles(); // Refresh list once after all uploads are done
+    setUploading(false);
+    
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    
+    if (failCount > 0) {
+      alert(`Berhasil mengunggah ${successCount} file, gagal mengunggah ${failCount} file.`);
     }
   };
 
