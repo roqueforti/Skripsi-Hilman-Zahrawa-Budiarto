@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     return config;
   },
   turbopack: {},
+  serverExternalPackages: ['pdfjs-dist'],
 };
 
 export default nextConfig;
