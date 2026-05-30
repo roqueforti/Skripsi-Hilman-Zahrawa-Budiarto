@@ -77,6 +77,10 @@ export function AdminPage() {
           successCount++;
         } else {
           failCount++;
+          try {
+            const errBody = await res.json();
+            alert(`Error pada file ${currentFile.name}: ${errBody.error}`);
+          } catch(e) {}
         }
       } catch (error) {
         console.error('Error uploading file:', selectedFilesInput[i].name, error);
