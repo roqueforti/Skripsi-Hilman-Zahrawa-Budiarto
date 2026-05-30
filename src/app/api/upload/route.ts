@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { extractTextFromPdf } from '@/lib/pdf';
+import { extractTextFromPdfServer } from '@/lib/pdf-server';
 import { prisma } from '@/lib/db';
 
 export async function POST(request: Request) {
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     for (const file of files) {
       try {
         // 1. Extract text directly from PDF
-        const rawText = await extractTextFromPdf(file);
+        const rawText = await extractTextFromPdfServer(file);
         
         let translatedText = null;
 
