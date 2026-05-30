@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
     
     const response = await fetch(`${PYTHON_API_URL}/`, { 
       signal: controller.signal 
