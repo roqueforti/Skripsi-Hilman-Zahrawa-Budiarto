@@ -1,70 +1,64 @@
 import { NextResponse } from 'next/server';
-import { extractTextFromPdfServer } from '@/lib/pdf-server';
 import { prisma } from '@/lib/db';
 
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
-    const files = formData.getAll('files') as File[];
+    const body = await request.json();
+    const { filename, rawText } = body;
 
-    if (!files || files.length === 0) {
-      return NextResponse.json({ error: 'Tidak ada file yang diunggah' }, { status: 400 });
+    if (!filename || !rawText) {
+      return NextResponse.json({ error: 'Data tidak lengkap' }, { status: 400 });
     }
 
     const rawUrl = process.env.PYTHON_API_URL || 'http://localhost:8000';
     const PYTHON_API_URL = rawUrl.endsWith('/') ? rawUrl.slice(0, -1) : rawUrl;
     const savedRecords = [];
 
-    for (const file of files) {
-      try {
-        // 1. Extract text directly from PDF
-        const rawText = await extractTextFromPdfServer(file);
-        
-        let translatedText = null;
+    try {
+      let translatedText = null;
 
-        // 2. Translate if Python API is available
-        if (PYTHON_API_URL && rawText.trim()) {
-          try {
-            const translateRes = await fetch(`${PYTHON_API_URL}/translate`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: rawText.substring(0, 10000) }), // Limit to 10k chars for safety
-            });
-            if (translateRes.ok) {
-              const data = await translateRes.json();
-              translatedText = data.translated;
-            }
-          } catch (err) {
-            console.error('Translation failed during upload:', err);
+      // 2. Translate if Python API is available
+      if (PYTHON_API_URL && rawText.trim()) {
+        try {
+          const translateRes = await fetch(`${PYTHON_API_URL}/translate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: rawText.substring(0, 10000) }), // Limit to 10k chars for safety
+          });
+          if (translateRes.ok) {
+            const data = await translateRes.json();
+            translatedText = data.translated;
           }
+        } catch (err) {
+          console.error('Translation failed during upload:', err);
         }
-
-        const displayName = file.name
-          .replace('.pdf', '')
-          .replace(/[_-]/g, ' ')
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-
-        // 3. Save to Database
-        const certification = await prisma.certification.create({
-          data: {
-            name: displayName,
-            institution: 'Certiport',
-            category: 'Certification',
-            rawText: rawText,
-            translatedText: translatedText,
-            pdfPath: file.name,
-          },
-        });
-
-        savedRecords.push(certification.name);
-      } catch (fileError: any) {
-        console.error(`Error processing file ${file.name}:`, fileError);
-        return NextResponse.json({ 
-          error: `Error memproses file ${file.name}: ${fileError.message || String(fileError)}` 
-        }, { status: 400 });
       }
+
+      const displayName = filename
+        .replace('.pdf', '')
+        .replace(/[_-]/g, ' ')
+        .split(' ')
+        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+      // 3. Save to Database
+      const certification = await prisma.certification.create({
+        data: {
+          name: displayName,
+          institution: 'Certiport',
+          category: 'Certification',
+          rawText: rawText,
+          translatedText: translatedText,
+          pdfPath: filename,
+        },
+      });
+
+      savedRecords.push(certification.name);
+    } catch (fileError: any) {
+      console.error(`Error processing file ${filename}:`, fileError);
+      return NextResponse.json({ 
+        error: `Error memproses file ${filename}: ${fileError.message || String(fileError)}` 
+      }, { status: 400 });
     }
 
     return NextResponse.json({ 

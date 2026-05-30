@@ -11,6 +11,8 @@ interface FileData {
   uploadDate: string;
 }
 
+import { extractTextFromPdf } from '@/lib/pdf';
+
 export function AdminPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -64,13 +66,16 @@ export function AdminPage() {
         fileName: currentFile.name
       });
 
-      const formData = new FormData();
-      formData.append('files', currentFile);
-
       try {
+        const rawText = await extractTextFromPdf(currentFile);
+        
         const res = await fetch('/api/upload', {
           method: 'POST',
-          body: formData,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: currentFile.name,
+            rawText: rawText
+          })
         });
 
         if (res.ok) {
