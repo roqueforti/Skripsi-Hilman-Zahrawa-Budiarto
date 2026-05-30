@@ -165,7 +165,11 @@ def main():
     # =========================================================
     send_progress("SEMANTIC_EMBED")
     try:
-        model = SentenceTransformer("all-MiniLM-L6-v2")
+        model_path = os.path.join(os.getcwd(), "models", "all-MiniLM-L6-v2")
+        if os.path.exists(model_path):
+            model = SentenceTransformer(model_path)
+        else:
+            model = SentenceTransformer("all-MiniLM-L6-v2")
         domain_embeddings = model.encode(domains_en, convert_to_numpy=True)
         client_embedding = model.encode(client_text_en, convert_to_numpy=True)
     except Exception as e:
@@ -188,7 +192,7 @@ def main():
     send_progress("WEIGHTING")
     results = []
     for i in range(len(domain_names)):
-        final_score = (0.5 * semantic_scores[i]) + (0.5 * numeric_scores[i])
+        final_score = (0.6 * semantic_scores[i]) + (0.4 * numeric_scores[i])
         display_name = domain_names[i].replace('.pdf', '').replace('_', ' ')
         
         results.append({

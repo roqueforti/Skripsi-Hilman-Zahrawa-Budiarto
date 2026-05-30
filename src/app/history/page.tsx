@@ -127,7 +127,7 @@ export default async function HistoryPage() {
                                 />
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {details.slice(0, 5).map((item: any, idx: number) => (
+                                {details.slice(0, 15).map((item: any, idx: number) => (
                                   <div key={idx} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
                                     {idx === 0 && <div className="absolute top-0 right-0 w-12 h-12 bg-emerald-500/10 rounded-bl-full flex items-start justify-end p-2"><Award className="w-4 h-4 text-emerald-600" /></div>}
                                     <div className="flex items-center gap-2 mb-3">
@@ -139,11 +139,11 @@ export default async function HistoryPage() {
                                     
                                     <div className="space-y-2">
                                       <div className="flex justify-between items-center text-xs">
-                                        <span className="text-gray-500">Semantic Score (50%)</span>
+                                        <span className="text-gray-500">Semantic Score (60%)</span>
                                         <span className="font-medium text-gray-900">{item.semanticScore.toFixed(2)}%</span>
                                       </div>
                                       <div className="flex justify-between items-center text-xs">
-                                        <span className="text-gray-500">TF-IDF Score (50%)</span>
+                                        <span className="text-gray-500">TF-IDF Score (40%)</span>
                                         <span className="font-medium text-gray-900">{item.numericScore.toFixed(2)}%</span>
                                       </div>
                                       <div className="h-px bg-gray-100 my-2"></div>

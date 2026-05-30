@@ -9,14 +9,14 @@ interface HomePageProps {
 export function HomePage({ onAnalyze }: HomePageProps) {
   const [profileText, setProfileText] = useState('');
   const [uploadedFileName, setUploadedFileName] = useState('');
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (profileText.trim()) {
       onAnalyze(profileText, uploadedFileName);
     }
   };
-  
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type === 'application/pdf') {
@@ -24,7 +24,7 @@ export function HomePage({ onAnalyze }: HomePageProps) {
       setProfileText(`PDF File: ${file.name}\n\nOrganisasi: PT. TechCorp Indonesia\nIndustri: Teknologi Informasi\nDepartemen: Engineering\nJumlah Tim: 50 profesional\n\nKebutuhan Training:\nKami ingin meningkatkan kemampuan tim engineering dalam cloud computing, khususnya platform Microsoft Azure dan AWS. Selain itu diperlukan juga sertifikasi cybersecurity dan data analytics untuk mendukung inisiatif transformasi digital perusahaan.`);
     }
   };
-  
+
   return (
     <div className="h-screen flex overflow-hidden bg-white">
       {/* Left Side - Hero Section with Background */}
@@ -39,7 +39,7 @@ export function HomePage({ onAnalyze }: HomePageProps) {
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/95 via-white/90 to-[#007fa3]/20"></div>
         </div>
-        
+
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between h-full p-12">
           {/* Logo */}
@@ -49,14 +49,14 @@ export function HomePage({ onAnalyze }: HomePageProps) {
               <span className="text-[#007fa3]">Match</span>
             </h1>
           </div>
-          
+
           {/* Hero Content */}
           <div className="flex-1 flex flex-col justify-center max-w-xl">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-[#007fa3]/20 rounded-full mb-6 w-fit shadow-sm">
               <Sparkles className="w-4 h-4 text-[#007fa3]" />
-              <span className="text-sm text-[#007fa3] font-medium">AI-Powered Matching System</span>
+              <span className="text-sm text-[#007fa3] font-medium">Text Similarity Matching System</span>
             </div>
-            
+
             <h2 className="text-5xl font-light text-gray-900 mb-6 leading-tight">
               Temukan <span className="font-normal relative inline-block">
                 <span className="relative z-10">sertifikasi</span>
@@ -67,11 +67,11 @@ export function HomePage({ onAnalyze }: HomePageProps) {
                 yang tepat untuk klien
               </span>
             </h2>
-            
+
             <p className="text-lg text-gray-700 mb-12 leading-relaxed">
-              Sistem rekomendasi sertifikasi Certiport berbasis AI untuk <span className="text-[#007fa3] font-medium">CATC JTI Polinema</span>. Upload profil klien dan dapatkan rekomendasi yang akurat menggunakan text similarity analysis.
+              Sistem rekomendasi sertifikasi Certiport berbasis text similarity untuk <span className="text-[#007fa3] font-medium">CATC JTI Polinema</span>. Upload profil klien dan dapatkan rekomendasi yang akurat menggunakan text similarity analysis.
             </p>
-            
+
             {/* Features */}
             <div className="grid grid-cols-2 gap-6">
               <div className="flex items-start gap-3 bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50 shadow-sm">
@@ -83,7 +83,7 @@ export function HomePage({ onAnalyze }: HomePageProps) {
                   <p className="text-xs text-gray-600">Hasil dalam hitungan detik</p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3 bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50 shadow-sm">
                 <div className="w-10 h-10 bg-[#007fa3]/10 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Target className="w-5 h-5 text-[#007fa3]" />
@@ -93,7 +93,7 @@ export function HomePage({ onAnalyze }: HomePageProps) {
                   <p className="text-xs text-gray-600">Match score yang presisi</p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3 bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50 shadow-sm">
                 <div className="w-10 h-10 bg-[#007fa3]/10 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Shield className="w-5 h-5 text-[#007fa3]" />
@@ -103,19 +103,19 @@ export function HomePage({ onAnalyze }: HomePageProps) {
                   <p className="text-xs text-gray-600">Khusus tim CATC</p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3 bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50 shadow-sm">
                 <div className="w-10 h-10 bg-[#007fa3]/10 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Sparkles className="w-5 h-5 text-[#007fa3]" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900 text-sm mb-1">AI Technology</h3>
+                  <h3 className="font-medium text-gray-900 text-sm mb-1">Text Similarity</h3>
                   <p className="text-xs text-gray-600">Text similarity matching</p>
                 </div>
               </div>
             </div>
           </div>
-          
+
           {/* Footer Info */}
           <div className="pt-8 border-t border-gray-300/50">
             <p className="text-xs text-gray-700">
@@ -124,7 +124,7 @@ export function HomePage({ onAnalyze }: HomePageProps) {
           </div>
         </div>
       </div>
-      
+
       {/* Right Side - Input Form */}
       <div className="w-[500px] bg-white border-l border-gray-200 flex flex-col shadow-2xl">
         {/* Header */}
@@ -132,7 +132,7 @@ export function HomePage({ onAnalyze }: HomePageProps) {
           <h3 className="font-semibold text-gray-900 mb-1">Upload Profil Klien</h3>
           <p className="text-sm text-gray-600">Upload PDF atau paste teks profil</p>
         </div>
-        
+
         {/* Form */}
         <div className="flex-1 overflow-y-auto p-8">
           <form onSubmit={handleSubmit} className="space-y-6 h-full flex flex-col">
@@ -155,7 +155,7 @@ export function HomePage({ onAnalyze }: HomePageProps) {
                   className="hidden"
                 />
               </label>
-              
+
               {/* Divider */}
               <div className="relative mb-4">
                 <div className="absolute inset-0 flex items-center">
@@ -165,10 +165,10 @@ export function HomePage({ onAnalyze }: HomePageProps) {
                   <span className="bg-white px-3 text-xs text-gray-400 uppercase">atau</span>
                 </div>
               </div>
-              
+
               {/* Text Area */}
               <div className="flex-1 flex flex-col">
-                <label className="text-sm font-medium text-gray-700 mb-2">Paste Teks Profil</label>
+                <label className="text-sm font-medium text-gray-700 mb-2">Preview Teks</label>
                 <div className="relative flex-1">
                   <textarea
                     value={profileText}
@@ -192,7 +192,7 @@ Kami ingin meningkatkan kemampuan tim dalam cloud computing (Azure & AWS), cyber
                 </div>
               </div>
             </div>
-            
+
             {/* Footer */}
             <div className="pt-4 border-t border-gray-100">
               <div className="flex items-center justify-between mb-4">
@@ -207,7 +207,7 @@ Kami ingin meningkatkan kemampuan tim dalam cloud computing (Azure & AWS), cyber
                   )}
                 </p>
               </div>
-              
+
               <button
                 type="submit"
                 disabled={!profileText.trim()}

@@ -49,7 +49,7 @@ export function ExportHistoryButton({ clientName, dateStr, recommendations }: Ex
     const finalY = (doc as any).lastAutoTable.finalY + 20;
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
-    doc.text('Analisis ini dihasilkan secara otomatis menggunakan model CertiMatch AI.', 14, finalY);
+    doc.text('Analisis ini dihasilkan secara otomatis menggunakan metode text similarity.', 14, finalY);
 
     doc.save(`Riwayat_Sertifikasi_${clientName.replace(/\s+/g, '_')}.pdf`);
   };

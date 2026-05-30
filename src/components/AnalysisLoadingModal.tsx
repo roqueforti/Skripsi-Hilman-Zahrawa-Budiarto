@@ -117,14 +117,8 @@ export function AnalysisLoadingModal({ isOpen, profileText, fileName, onComplete
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 font-sans animate-in fade-in duration-300">
-      <div className="bg-[#030213] w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl border border-white/10 flex flex-col relative animate-in zoom-in-95 duration-300">
-        {/* Background Effects */}
-        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-[#0084A1]/20 rounded-full blur-[100px] animate-pulse"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-emerald-500/20 rounded-full blur-[100px] animate-pulse"></div>
-        </div>
-
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 font-sans animate-in fade-in duration-300">
+      <div className="w-full max-w-4xl flex flex-col relative animate-in zoom-in-95 duration-300">
         {error ? (
           <div className="relative z-10 p-12 flex flex-col items-center text-center">
              <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center text-red-500 mb-6">
@@ -140,81 +134,17 @@ export function AnalysisLoadingModal({ isOpen, profileText, fileName, onComplete
              </button>
           </div>
         ) : (
-          <>
-            {/* Header */}
-            <div className="relative z-10 px-8 py-6 flex items-center justify-between border-b border-white/10 bg-white/5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#0084A1] rounded-xl flex items-center justify-center shadow-lg shadow-[#0084A1]/20">
-                  <Award className="text-white" size={20} />
-                </div>
-                <div>
-                  <h2 className="text-white text-lg font-bold">Menganalisis Profil</h2>
-                  <p className="text-gray-400 text-xs font-medium">Sinkronisasi AI & Database Sertifikasi</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2 bg-black/40 border border-white/10 px-4 py-2 rounded-xl">
-                <Timer className="text-[#0084A1] animate-pulse" size={16} />
-                <span className="text-white font-mono text-base tabular-nums">{seconds}<span className="text-[#0084A1] ml-1 text-[10px] uppercase font-bold">dtk</span></span>
-              </div>
+          <div className="relative z-10 p-12 flex flex-col items-center justify-center text-center">
+            <div className="mb-10">
+              <Loader2 size={64} className="text-[#0084A1] animate-spin" />
             </div>
-
-            {/* Content */}
-            <div className="relative z-10 p-8">
-              <div className="grid grid-cols-3 gap-3">
-                {LOADING_STEPS.map((step) => {
-                  const isActive = step.id === currentStepId;
-                  const isCompleted = completedSteps.includes(step.id);
-                  
-                  return (
-                    <div 
-                      key={step.id}
-                      className={`relative p-4 rounded-2xl border transition-all duration-500 flex items-start gap-3 overflow-hidden ${
-                        isActive 
-                          ? 'bg-white/10 border-[#0084A1] shadow-[0_0_30px_-5px_rgba(0,132,161,0.4)] scale-[1.02] z-30 ring-1 ring-[#0084A1]/30' 
-                          : isCompleted
-                            ? 'bg-emerald-500/10 border-emerald-500/20'
-                            : 'bg-white/[0.02] border-white/5 opacity-40'
-                      }`}
-                    >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-500 ${
-                        isActive 
-                          ? 'bg-[#0084A1] text-white shadow-lg' 
-                          : isCompleted 
-                            ? 'bg-emerald-500 text-white' 
-                            : 'bg-white/10 text-gray-600'
-                      }`}>
-                        {isCompleted ? <CheckCircle2 size={18} /> : isActive ? <Loader2 size={18} className="animate-spin" /> : step.icon}
-                      </div>
-
-                      <div className="relative z-10 min-w-0 flex-1">
-                        <h3 className={`text-[11px] font-bold uppercase tracking-wider mb-0.5 transition-colors ${isActive ? 'text-[#00d6ff]' : isCompleted ? 'text-emerald-400' : 'text-gray-500'}`}>
-                          {step.label}
-                        </h3>
-                        <p className={`text-[10px] leading-snug transition-all ${isActive ? 'text-gray-400' : isCompleted ? 'text-emerald-600/50' : 'text-gray-600'}`}>
-                          {step.description}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+            <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">Menganalisis Profil...</h2>
+            <p className="text-gray-300 mb-10 max-w-sm text-lg leading-relaxed">Mencocokkan profil klien dengan sertifikasi di Certiport.</p>
+            <div className="flex items-center gap-2.5 bg-black/40 border border-white/10 px-6 py-3 rounded-full shadow-lg">
+               <Timer className="text-[#0084A1] animate-pulse" size={20} />
+               <span className="text-lg font-mono text-white font-bold">{seconds} <span className="text-gray-400 text-sm font-medium uppercase tracking-wider ml-1">detik</span></span>
             </div>
-
-            {/* Footer Progress */}
-            <div className="relative z-10 px-8 py-4 border-t border-white/5 bg-black/40 flex items-center justify-between">
-              <div className="flex items-center gap-1.5 flex-1">
-                {LOADING_STEPS.map((s) => (
-                  <div 
-                    key={s.id} 
-                    className={`h-1.5 rounded-full transition-all duration-500 flex-1 ${
-                      currentStepId === s.id ? 'bg-[#0084A1] animate-pulse' : completedSteps.includes(s.id) ? 'bg-emerald-500' : 'bg-white/10'
-                    }`} 
-                  />
-                ))}
-              </div>
-            </div>
-          </>
+          </div>
         )}
       </div>
     </div>

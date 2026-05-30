@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { ArrowLeft, Download, ChevronDown, FileText } from 'lucide-react';
+import { ArrowLeft, Download, ChevronDown, FileText, Trophy, Medal, Award, Building2, BookOpen, Star, Sparkles } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -60,55 +60,13 @@ export function ResultPage({ onBack, profileText, fileName, recommendations }: R
     const finalY = (doc as any).lastAutoTable.finalY + 20;
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
-    doc.text('Analisis ini dihasilkan secara otomatis menggunakan model CertiMatch AI.', 14, finalY);
+    doc.text('Analisis ini dihasilkan secara otomatis menggunakan metode text similarity.', 14, finalY);
 
     doc.save(`Rekomendasi_Sertifikasi_${fileName.replace(/\s+/g, '_')}.pdf`);
   };
 
-  const getRankStyle = (rank: number) => {
-    switch (rank) {
-      case 1: return {
-        badge: 'bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 shadow-amber-500/40',
-        ring: 'ring-2 ring-amber-400/30',
-        label: '🏆 Best Match',
-        labelClass: 'bg-amber-50 text-amber-700 border-amber-200',
-      };
-      case 2: return {
-        badge: 'bg-gradient-to-br from-slate-300 via-gray-400 to-slate-500 shadow-gray-400/30',
-        ring: 'ring-2 ring-slate-300/20',
-        label: '🥈 Runner Up',
-        labelClass: 'bg-slate-50 text-slate-600 border-slate-200',
-      };
-      case 3: return {
-        badge: 'bg-gradient-to-br from-orange-400 via-amber-600 to-orange-700 shadow-orange-500/30',
-        ring: 'ring-2 ring-orange-300/20',
-        label: '🥉 Top 3',
-        labelClass: 'bg-orange-50 text-orange-600 border-orange-200',
-      };
-      default: return {
-        badge: 'bg-gradient-to-br from-[#0084A1] to-[#006a8a] shadow-[#0084A1]/20',
-        ring: '',
-        label: `#${rank}`,
-        labelClass: 'bg-gray-50 text-gray-600 border-gray-200',
-      };
-    }
-  };
-
-  const getScoreBar = (score: number) => {
-    if (score >= 80) return 'bg-gradient-to-r from-emerald-400 to-emerald-500';
-    if (score >= 60) return 'bg-gradient-to-r from-[#0084A1] to-[#00a5c8]';
-    if (score >= 40) return 'bg-gradient-to-r from-amber-400 to-amber-500';
-    return 'bg-gradient-to-r from-gray-300 to-gray-400';
-  };
-
-  const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-    if (score >= 60) return 'bg-[#0084A1]/10 text-[#0084A1] border-[#0084A1]/20';
-    return 'bg-gray-50 text-gray-700 border-gray-200';
-  };
-
-  const topFive = recommendations.slice(0, 5);
-  const otherProducts = recommendations.slice(5);
+  const topFive = recommendations.slice(0, 15);
+  const otherProducts = recommendations.slice(15);
 
   return (
     <div className="h-screen flex flex-col bg-white overflow-hidden font-sans">
@@ -130,7 +88,7 @@ export function ResultPage({ onBack, profileText, fileName, recommendations }: R
       </div>
       
       <div className="flex-1 overflow-y-auto bg-gray-50/50 p-8">
-        <div className="max-w-5xl mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto">
           <div className="mb-8 flex flex-col gap-2">
             <div className="flex items-center">
               <span className="bg-[#0084A1]/10 text-[#0084A1] px-3 py-1.5 rounded-full text-xs font-bold border border-[#0084A1]/20 flex items-center gap-1.5">
@@ -138,33 +96,30 @@ export function ResultPage({ onBack, profileText, fileName, recommendations }: R
                 Dokumen: {fileName}
               </span>
             </div>
-            <h2 className="text-[32px] font-bold text-gray-900 leading-tight">Top 5 Rekomendasi <span className="text-[#0084A1]">Sertifikasi</span></h2>
+            <h2 className="text-[32px] font-bold text-gray-900 leading-tight">Top 15 Rekomendasi <span className="text-[#0084A1]">Sertifikasi</span></h2>
             <p className="text-gray-500">Hasil analisis kecocokan profil klien dengan database sertifikasi.</p>
           </div>
 
-          <div className="flex flex-col gap-4">
-            {topFive.map((rec) => {
-              const style = getRankStyle(rec.rank);
-              return (
-                <div key={rec.rank} className={`bg-white border border-gray-200 rounded-2xl p-6 flex items-center gap-6 hover:shadow-lg transition-all ${style.ring}`}>
-                  <div className={`w-12 h-12 ${style.badge} rounded-xl flex items-center justify-center text-white font-extrabold text-xl`}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {topFive.map((rec) => (
+              <div key={rec.rank} className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col gap-3 hover:border-[#0084A1]/30 hover:shadow-md transition-all">
+                <div className="flex items-center justify-between">
+                  <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 text-gray-600 font-bold flex items-center justify-center text-sm shadow-sm">
                     #{rec.rank}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${style.labelClass}`}>{style.label}</span>
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{rec.category}</span>
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900">{rec.name}</h3>
-                    <p className="text-sm text-gray-500">{rec.institution}</p>
-                  </div>
-                  <div className={`px-4 py-2 rounded-xl border text-center min-w-[100px] ${getScoreBg(rec.matchScore)}`}>
-                    <div className="text-2xl font-black">{rec.matchScore}%</div>
-                    <div className="text-[10px] font-bold uppercase opacity-60">Match Score</div>
-                  </div>
+                  <span className="text-[10px] font-bold text-[#0084A1] bg-[#0084A1]/10 px-2 py-0.5 rounded-full uppercase tracking-wider">{rec.category}</span>
                 </div>
-              );
-            })}
+                
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold text-gray-900 leading-tight line-clamp-2" title={rec.name}>{rec.name}</h3>
+                </div>
+
+                <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                  <span className="text-xs font-medium text-gray-500">Kecocokan</span>
+                  <span className="text-sm font-bold text-[#0084A1]">{rec.matchScore}%</span>
+                </div>
+              </div>
+            ))}
           </div>
 
           {otherProducts.length > 0 && (

@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  webpack: (config) => {
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: ['**/.venv/**', '**/nltk_data/**', '**/nltk_data_api/**', '**/models/**', '**/.next/**'],
+    };
+    return config;
+  },
 };
 
 export default nextConfig;

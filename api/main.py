@@ -28,7 +28,13 @@ def download_nltk():
 download_nltk()
 
 # Load Model
-model = SentenceTransformer("all-MiniLM-L6-v2")
+model_path = os.path.join(os.getcwd(), "models", "all-MiniLM-L6-v2")
+if os.path.exists(model_path):
+    print("[Pipeline] Loading local model...", flush=True)
+    model = SentenceTransformer(model_path)
+else:
+    print("[Pipeline] Downloading/loading model from Hugging Face...", flush=True)
+    model = SentenceTransformer("all-MiniLM-L6-v2")
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
 
@@ -111,7 +117,7 @@ async def analyze(data: AnalyzeRequest):
         print("[Pipeline] Calculating final match scores...", flush=True)
         results = []
         for i in range(len(domain_names)):
-            final_score = (0.5 * semantic_scores[i]) + (0.5 * numeric_scores[i])
+            final_score = (0.6 * semantic_scores[i]) + (0.4 * numeric_scores[i])
             results.append({
                 "name": domain_names[i],
                 "matchScore": round(float(final_score) * 100, 2),
