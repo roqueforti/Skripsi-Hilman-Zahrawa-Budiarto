@@ -59,8 +59,11 @@ export async function POST(request: Request) {
         });
 
         savedRecords.push(certification.name);
-      } catch (fileError) {
+      } catch (fileError: any) {
         console.error(`Error processing file ${file.name}:`, fileError);
+        return NextResponse.json({ 
+          error: `Error memproses file ${file.name}: ${fileError.message || String(fileError)}` 
+        }, { status: 400 });
       }
     }
 
