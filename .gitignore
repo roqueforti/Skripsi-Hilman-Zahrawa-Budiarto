@@ -44,3 +44,5 @@ next-env.d.ts
 nltk_data/
 __pycache__/
 *.pyc
+# executables
+*.exe
