@@ -18,6 +18,7 @@ export function AdminPage() {
   const [files, setFiles] = useState<FileData[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number, total: number, fileName: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -56,8 +57,15 @@ export function AdminPage() {
     let failCount = 0;
 
     for (let i = 0; i < selectedFilesInput.length; i++) {
+      const currentFile = selectedFilesInput[i];
+      setUploadProgress({
+        current: i + 1,
+        total: selectedFilesInput.length,
+        fileName: currentFile.name
+      });
+
       const formData = new FormData();
-      formData.append('files', selectedFilesInput[i]);
+      formData.append('files', currentFile);
 
       try {
         const res = await fetch('/api/upload', {
@@ -78,6 +86,7 @@ export function AdminPage() {
 
     await fetchFiles(); // Refresh list once after all uploads are done
     setUploading(false);
+    setUploadProgress(null);
     
     if (fileInputRef.current) fileInputRef.current.value = '';
     
@@ -194,7 +203,9 @@ export function AdminPage() {
               className="flex items-center gap-2 px-5 py-3 bg-[#0084A1] text-white text-[15px] rounded-[14px] hover:bg-[#00728b] transition-all font-bold shadow-lg shadow-[#0084A1]/25 disabled:opacity-50"
             >
               {uploading ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
-              Upload PDF (Massal)
+              {uploadProgress 
+                ? `Mengunggah (${uploadProgress.current}/${uploadProgress.total})` 
+                : 'Upload PDF (Massal)'}
             </button>
           </div>
         </div>
