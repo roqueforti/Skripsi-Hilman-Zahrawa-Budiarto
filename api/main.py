@@ -27,16 +27,22 @@ def download_nltk():
 
 download_nltk()
 
-# Load Model
-model_path = os.path.join(os.getcwd(), "models", "all-MiniLM-L6-v2")
-if os.path.exists(model_path):
-    print("[Pipeline] Loading local model...", flush=True)
-    model = SentenceTransformer(model_path)
-else:
-    print("[Pipeline] Downloading/loading model from Hugging Face...", flush=True)
-    model = SentenceTransformer("all-MiniLM-L6-v2")
+# Model placeholder
+model = None
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
+
+def get_model():
+    global model
+    if model is None:
+        model_path = os.path.join(os.getcwd(), "models", "all-MiniLM-L6-v2")
+        if os.path.exists(model_path):
+            print("[Pipeline] Loading local model...", flush=True)
+            model = SentenceTransformer(model_path)
+        else:
+            print("[Pipeline] Downloading/loading model from Hugging Face...", flush=True)
+            model = SentenceTransformer("all-MiniLM-L6-v2")
+    return model
 
 class AnalyzeRequest(BaseModel):
     profileText: str
@@ -109,8 +115,9 @@ async def analyze(data: AnalyzeRequest):
         numeric_scores = cosine_similarity(tfidf_matrix[-1], tfidf_matrix[:-1])[0]
         
         print("[Pipeline] Generating semantic embeddings with SentenceTransformer...", flush=True)
-        client_embed = model.encode(client_text_en, convert_to_numpy=True)
-        domain_embeds = model.encode(domain_texts, convert_to_numpy=True)
+        active_model = get_model()
+        client_embed = active_model.encode(client_text_en, convert_to_numpy=True)
+        domain_embeds = active_model.encode(domain_texts, convert_to_numpy=True)
         print("[Pipeline] Calculating semantic similarity...", flush=True)
         semantic_scores = cosine_similarity([client_embed], domain_embeds)[0]
         
