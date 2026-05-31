@@ -1,0 +1,10 @@
+.git
+.env*
+.venv
+.next
+node_modules
+models
+nltk_data
+nltk_data_api
+*.exe
+*.deb
