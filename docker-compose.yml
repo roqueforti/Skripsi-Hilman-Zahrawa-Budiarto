@@ -4,14 +4,12 @@ services:
   # 1. Container Database PostgreSQL
   db:
     image: postgres:15-alpine
-    container_name: certimatch_db
+    container_name: sys_metrics_db
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: certimatch123
       POSTGRES_DB: certimatch_db
-    ports:
-      - "5432:5432" # Membuka port jika Anda butuh akses db via DBeaver/PGAdmin
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -20,12 +18,9 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
-    container_name: certimatch_web
+    container_name: sys_metrics_web
     restart: always
-    ports:
-      - "3000:3000"
     environment:
-      # Koneksi database diarahkan ke container 'db' di atas
       - DATABASE_URL=postgresql://postgres:certimatch123@db:5432/certimatch_db?schema=public
       - PYTHON_API_URL=http://api:8000
     depends_on:
@@ -37,22 +32,19 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile.api
-    container_name: certimatch_api
+    container_name: sys_metrics_api
     restart: always
-    ports:
-      - "8000:8000" 
 
-  # 4. Container Cloudflare Tunnel (Opsional/Bisa dimatikan)
-  # cloudflared:
-  #   image: cloudflare/cloudflared:latest
-  #   container_name: certimatch_tunnel
-  #   restart: always
-  #   environment:
-  #     - TUNNEL_TOKEN=MASUKKAN_TOKEN_ANDA_DI_SINI
-  #   command: tunnel run
-  #   depends_on:
-  #     - api
-  #     - web
+  # 4. Container Cloudflare Tunnel
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: sys_metrics_agent
+    restart: always
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    command: tunnel run
+    depends_on:
+      - web
 
 volumes:
   postgres_data:
